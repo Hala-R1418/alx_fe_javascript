@@ -387,3 +387,42 @@ async function syncQuotes() {
 
 // Call syncQuotes every 60 seconds (60000 ms)
 setInterval(syncQuotes, 60000);
+
+async function syncQuotes() {
+  const serverQuotes = await fetchQuotesFromServer();
+  if (!serverQuotes) {
+    showNotification("Failed to sync with server.");
+    return;
+  }
+
+  updateLocalQuotesMap();
+
+  let conflictsResolved = false;
+  let newDataAdded = false;
+
+  serverQuotes.forEach(sq => {
+    const local = localQuotesById[sq.id];
+    if (!local) {
+      quotes.push(sq);
+      newDataAdded = true;
+    } else {
+      if ((sq.updatedAt || 0) > (local.updatedAt || 0)) {
+        local.text = sq.text;
+        local.category = sq.category;
+        local.updatedAt = sq.updatedAt;
+        conflictsResolved = true;
+      }
+    }
+  });
+
+  if (conflictsResolved || newDataAdded) {
+    saveQuotes();
+    populateCategories();
+    showRandomQuote(true);
+    let msg = newDataAdded ? "New quotes synced from server." : "";
+    msg += conflictsResolved ? " Conflicts resolved in favor of server." : "";
+    showNotification(msg.trim());
+  } else {
+    showNotification("Quotes synced with server!");
+  }
+}
