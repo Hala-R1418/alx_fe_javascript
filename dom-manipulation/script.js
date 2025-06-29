@@ -8,23 +8,39 @@ const quoteDisplay = document.getElementById("quoteDisplay");
 const newQuoteBtn = document.getElementById("newQuote");
 const categoryFilter = document.getElementById("categoryFilter");
 
-// Dynamically generate the form using innerHTML
+// ✅ Build Add Quote Form using createElement & appendChild
 function createAddQuoteForm() {
   const container = document.getElementById("addQuoteContainer");
-  container.innerHTML = `
-    <h3>Add a New Quote</h3>
-    <div>
-      <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
-      <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
-      <button id="addQuoteBtn">Add Quote</button>
-    </div>
-  `;
+  container.innerHTML = ''; // Clear any existing content
 
-  // Bind the button after it is added to DOM
-  document.getElementById("addQuoteBtn").addEventListener("click", addQuote);
+  const heading = document.createElement('h3');
+  heading.textContent = 'Add a New Quote';
+
+  const inputQuote = document.createElement('input');
+  inputQuote.id = 'newQuoteText';
+  inputQuote.type = 'text';
+  inputQuote.placeholder = 'Enter a new quote';
+
+  const inputCategory = document.createElement('input');
+  inputCategory.id = 'newQuoteCategory';
+  inputCategory.type = 'text';
+  inputCategory.placeholder = 'Enter quote category';
+
+  const addButton = document.createElement('button');
+  addButton.id = 'addQuoteBtn';
+  addButton.textContent = 'Add Quote';
+
+  // Append elements
+  container.appendChild(heading);
+  container.appendChild(inputQuote);
+  container.appendChild(inputCategory);
+  container.appendChild(addButton);
+
+  // Attach event listener
+  addButton.addEventListener('click', addQuote);
 }
 
-// Populate categories
+// ✅ Populate categories (still using innerHTML for brevity)
 function populateCategories() {
   const categories = [...new Set(quotes.map(q => q.category))];
   let optionsHTML = `<option value=''>All</option>`;
@@ -34,7 +50,7 @@ function populateCategories() {
   categoryFilter.innerHTML = optionsHTML;
 }
 
-// Display random quote
+// ✅ Display a random quote using innerHTML
 function showRandomQuote() {
   const selectedCategory = categoryFilter.value;
   const filteredQuotes = selectedCategory
@@ -56,18 +72,19 @@ function showRandomQuote() {
   `;
 }
 
-// Add a quote
+// ✅ Add a quote
 function addQuote() {
   const newText = document.getElementById("newQuoteText").value.trim();
   const newCategory = document.getElementById("newQuoteCategory").value.trim();
 
-  if (newText === "" || newCategory === "") {
+  if (!newText || !newCategory) {
     alert("Please enter both a quote and a category.");
     return;
   }
 
   quotes.push({ text: newText, category: newCategory });
 
+  // Clear inputs
   document.getElementById("newQuoteText").value = "";
   document.getElementById("newQuoteCategory").value = "";
 
@@ -75,8 +92,8 @@ function addQuote() {
   alert("New quote added!");
 }
 
-// Initial setup
+// ✅ Initial setup
 newQuoteBtn.addEventListener("click", showRandomQuote);
 categoryFilter.addEventListener("change", showRandomQuote);
 populateCategories();
-createAddQuoteForm(); // <--- This creates the form dynamically
+createAddQuoteForm(); // <-- now uses createElement + appendChild
