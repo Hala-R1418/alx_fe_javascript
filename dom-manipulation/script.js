@@ -93,7 +93,7 @@ function filterQuotes() {
 }
 
 // --- Quote Form ---
-function addQuote() {
+async function addQuote() {
   const newText = document.getElementById("newQuoteText").value.trim();
   const newCategory = document.getElementById("newQuoteCategory").value.trim();
 
@@ -119,6 +119,15 @@ function addQuote() {
   document.getElementById("newQuoteCategory").value = "";
 
   alert("New quote added!");
+
+  // POST to server
+  try {
+    await postQuoteToServer(newQuoteObj);
+    showNotification("Quote synced to server successfully.");
+  } catch (err) {
+    showNotification("Failed to sync quote to server.");
+    console.error(err);
+  }
 }
 
 function createAddQuoteForm() {
@@ -229,6 +238,27 @@ async function fetchQuotesFromServer() {
   }
 }
 
+async function postQuoteToServer(quote) {
+  const response = await fetch(SERVER_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      title: quote.text,
+      body: quote.category,
+      userId: 1 // mock userId
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to post quote to server');
+  }
+
+  const data = await response.json();
+  console.log('Server response:', data);
+}
+
 function showNotification(message) {
   let notif = document.getElementById('notificationBar');
   if (!notif) {
@@ -270,43 +300,4 @@ function syncWithServer(serverQuotes) {
       quotes.push(sq);
       newDataAdded = true;
     } else {
-      // Conflict resolution: server wins if updatedAt is newer
-      if (!local.updatedAt || sq.updatedAt > local.updatedAt) {
-        const index = quotes.indexOf(local);
-        if (index !== -1) {
-          quotes[index] = sq;
-          conflictsResolved = true;
-        }
-      }
-    }
-  });
-
-  if (conflictsResolved || newDataAdded) {
-    saveQuotes();
-    populateCategories();
-    filterQuotes();
-
-    showNotification(`Data synced with server. ${conflictsResolved ? 'Conflicts resolved.' : ''} ${newDataAdded ? 'New quotes added.' : ''}`);
-  }
-}
-
-function startPeriodicSync() {
-  setInterval(async () => {
-    const serverQuotes = await fetchQuotesFromServer();
-    syncWithServer(serverQuotes);
-  }, 30000);
-}
-
-// --- Event Listeners ---
-newQuoteBtn.addEventListener("click", () => showRandomQuote(true));
-categoryFilter.addEventListener("change", filterQuotes);
-document.getElementById("exportBtn").addEventListener("click", exportToJson);
-document.getElementById("importFile").addEventListener("change", importFromJsonFile);
-
-// --- Initialize App ---
-loadQuotes();
-populateCategories();
-createAddQuoteForm();
-loadLastQuote();
-filterQuotes();
-startPeriodicSync();
+      // Conflict resolution: server wins if updated
