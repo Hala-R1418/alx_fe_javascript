@@ -8,9 +8,10 @@
 <body>
   <h1>Dynamic Quote Generator</h1>
 
+  <!-- Category Filter -->
   <div>
     <label for="categoryFilter">Select Category:</label>
-    <select id="categoryFilter"></select>
+    <select id="categoryFilter" onchange="filterQuotes()"></select>
   </div>
 
   <div id="quoteDisplay"></div>
